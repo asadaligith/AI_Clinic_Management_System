@@ -21,10 +21,6 @@ import ManageDoctors from "../pages/admin/ManageDoctors";
 import ManageReceptionists from "../pages/admin/ManageReceptionists";
 import SystemStats from "../pages/admin/SystemStats";
 
-// Doctor sub-pages
-import DoctorAppointments from "../pages/doctor/Appointments";
-import DoctorPatients from "../pages/doctor/Patients";
-
 // Receptionist sub-pages
 import RegisterPatient from "../pages/receptionist/RegisterPatient";
 import BookAppointment from "../pages/receptionist/BookAppointment";
@@ -32,6 +28,11 @@ import BookAppointment from "../pages/receptionist/BookAppointment";
 // Patient sub-pages
 import MyProfile from "../pages/patient/MyProfile";
 import MyAppointments from "../pages/patient/MyAppointments";
+
+// Shared pages
+import PatientList from "../pages/shared/PatientList";
+import PatientProfile from "../pages/shared/PatientProfile";
+import AppointmentList from "../pages/shared/AppointmentList";
 
 const AppRoutes = () => {
   return (
@@ -55,7 +56,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* ---- Admin dashboard (with Sidebar) ---- */}
+      {/* ---- Admin dashboard ---- */}
       <Route
         element={
           <RoleRoute roles={["admin"]}>
@@ -66,6 +67,9 @@ const AppRoutes = () => {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/manage-doctors" element={<ManageDoctors />} />
         <Route path="/admin/manage-receptionists" element={<ManageReceptionists />} />
+        <Route path="/admin/patients" element={<PatientList />} />
+        <Route path="/admin/patients/:id" element={<PatientProfile />} />
+        <Route path="/admin/appointments" element={<AppointmentList />} />
         <Route path="/admin/system-stats" element={<SystemStats />} />
       </Route>
 
@@ -78,8 +82,9 @@ const AppRoutes = () => {
         }
       >
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-        <Route path="/doctor/appointments" element={<DoctorAppointments />} />
-        <Route path="/doctor/patients" element={<DoctorPatients />} />
+        <Route path="/doctor/appointments" element={<AppointmentList />} />
+        <Route path="/doctor/patients" element={<PatientList />} />
+        <Route path="/doctor/patients/:id" element={<PatientProfile />} />
       </Route>
 
       {/* ---- Receptionist dashboard ---- */}
@@ -92,7 +97,10 @@ const AppRoutes = () => {
       >
         <Route path="/receptionist/dashboard" element={<ReceptionistDashboard />} />
         <Route path="/receptionist/register-patient" element={<RegisterPatient />} />
+        <Route path="/receptionist/patients" element={<PatientList />} />
+        <Route path="/receptionist/patients/:id" element={<PatientProfile />} />
         <Route path="/receptionist/book-appointment" element={<BookAppointment />} />
+        <Route path="/receptionist/appointments" element={<AppointmentList />} />
       </Route>
 
       {/* ---- Patient dashboard ---- */}

@@ -3,6 +3,8 @@ const sidebarMenus = {
     { label: "Dashboard",           path: "/admin/dashboard",             icon: "grid"       },
     { label: "Manage Doctors",      path: "/admin/manage-doctors",        icon: "user-md"    },
     { label: "Manage Receptionists",path: "/admin/manage-receptionists",  icon: "user-cog"   },
+    { label: "All Patients",        path: "/admin/patients",              icon: "users"      },
+    { label: "Appointments",        path: "/admin/appointments",          icon: "calendar"   },
     { label: "System Stats",        path: "/admin/system-stats",          icon: "chart-bar"  },
   ],
   doctor: [
@@ -13,7 +15,9 @@ const sidebarMenus = {
   receptionist: [
     { label: "Dashboard",        path: "/receptionist/dashboard",        icon: "grid"       },
     { label: "Register Patient", path: "/receptionist/register-patient", icon: "user-plus"  },
+    { label: "Patients",         path: "/receptionist/patients",         icon: "users"      },
     { label: "Book Appointment", path: "/receptionist/book-appointment", icon: "calendar"   },
+    { label: "Appointments",     path: "/receptionist/appointments",     icon: "calendar"   },
   ],
   patient: [
     { label: "Dashboard",       path: "/patient/dashboard",     icon: "grid"     },
