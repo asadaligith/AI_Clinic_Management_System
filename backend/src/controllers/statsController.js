@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Patient = require("../models/Patient");
 const Appointment = require("../models/Appointment");
+const Prescription = require("../models/Prescription");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 
@@ -27,16 +28,18 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       ]);
     stats = { totalDoctors, totalPatients, totalAppointments, appointmentsToday };
   } else if (role === "doctor") {
-    const [todaysAppointments, pendingAppointments] = await Promise.all([
-      Appointment.countDocuments({
-        doctorId: req.user._id,
-        date: { $gte: today, $lt: tomorrow },
-      }),
-      Appointment.countDocuments({
-        doctorId: req.user._id,
-        status: "pending",
-      }),
-    ]);
+    const [todaysAppointments, pendingAppointments, totalPrescriptions] =
+      await Promise.all([
+        Appointment.countDocuments({
+          doctorId: req.user._id,
+          date: { $gte: today, $lt: tomorrow },
+        }),
+        Appointment.countDocuments({
+          doctorId: req.user._id,
+          status: "pending",
+        }),
+        Prescription.countDocuments({ doctorId: req.user._id }),
+      ]);
     const patientIds = await Appointment.distinct("patientId", {
       doctorId: req.user._id,
     });
@@ -44,6 +47,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       todaysAppointments,
       totalPatients: patientIds.length,
       pendingAppointments,
+      totalPrescriptions,
     };
   } else if (role === "receptionist") {
     const [todaysAppointments, totalPatients, registeredToday] =
@@ -56,7 +60,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   } else if (role === "patient") {
     const patient = await Patient.findOne({ userId: req.user._id });
     if (patient) {
-      const [upcomingVisits, totalAppointments, completedVisits] =
+      const [upcomingVisits, totalAppointments, completedVisits, totalPrescriptions] =
         await Promise.all([
           Appointment.countDocuments({
             patientId: patient._id,
@@ -68,10 +72,11 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             patientId: patient._id,
             status: "completed",
           }),
+          Prescription.countDocuments({ patientId: patient._id }),
         ]);
-      stats = { upcomingVisits, totalAppointments, completedVisits };
+      stats = { upcomingVisits, totalAppointments, completedVisits, totalPrescriptions };
     } else {
-      stats = { upcomingVisits: 0, totalAppointments: 0, completedVisits: 0 };
+      stats = { upcomingVisits: 0, totalAppointments: 0, completedVisits: 0, totalPrescriptions: 0 };
     }
   }
 

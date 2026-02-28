@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getUsersApi, updateUserApi } from "../../api/adminApi";
+import { getUsersApi, updateUserApi, createDoctorApi } from "../../api/adminApi";
 import toast from "react-hot-toast";
 
 const ManageDoctors = () => {
@@ -7,6 +7,10 @@ const ManageDoctors = () => {
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [formErrors, setFormErrors] = useState({});
+  const [creating, setCreating] = useState(false);
 
   const fetchDoctors = useCallback(
     async (page = 1) => {
@@ -40,11 +44,38 @@ const ManageDoctors = () => {
     }
   };
 
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!form.name.trim()) errs.name = "Name is required";
+    if (!form.email.trim()) errs.email = "Email is required";
+    if (!form.password || form.password.length < 6) errs.password = "Min 6 characters";
+    setFormErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    setCreating(true);
+    try {
+      await createDoctorApi(form);
+      toast.success("Doctor created successfully");
+      setForm({ name: "", email: "", password: "" });
+      setShowForm(false);
+      fetchDoctors(1);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create doctor");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+      month: "short", day: "numeric", year: "numeric",
     });
 
   return (
@@ -56,19 +87,72 @@ const ManageDoctors = () => {
         </p>
       </div>
 
+      {/* Create Doctor Toggle */}
+      <div style={{ marginBottom: "1rem" }}>
+        <button
+          className="btn btn--primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancel" : "+ Add Doctor"}
+        </button>
+      </div>
+
+      {/* Create Doctor Form */}
+      {showForm && (
+        <div className="form-card" style={{ marginBottom: "1.5rem" }}>
+          <form onSubmit={handleCreate} noValidate>
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input
+                  type="text" name="name" value={form.name}
+                  onChange={handleFormChange}
+                  className={`form-input ${formErrors.name ? "form-input--error" : ""}`}
+                  placeholder="Dr. Full Name"
+                />
+                {formErrors.name && <span className="form-error">{formErrors.name}</span>}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email" name="email" value={form.email}
+                  onChange={handleFormChange}
+                  className={`form-input ${formErrors.email ? "form-input--error" : ""}`}
+                  placeholder="doctor@clinic.com"
+                />
+                {formErrors.email && <span className="form-error">{formErrors.email}</span>}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password" name="password" value={form.password}
+                  onChange={handleFormChange}
+                  className={`form-input ${formErrors.password ? "form-input--error" : ""}`}
+                  placeholder="Min 6 characters"
+                />
+                {formErrors.password && <span className="form-error">{formErrors.password}</span>}
+              </div>
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="btn btn--primary" disabled={creating}>
+                {creating ? "Creating..." : "Create Doctor"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Search */}
       <div className="table-toolbar">
         <div className="table-search">
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={search}
+          <input type="text" placeholder="Search by name..." value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="form-input"
-            style={{ maxWidth: 300 }}
+            className="form-input" style={{ maxWidth: 300 }}
           />
         </div>
       </div>
 
+      {/* Table */}
       <div className="table-container">
         <table className="data-table">
           <thead>
@@ -82,23 +166,16 @@ const ManageDoctors = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan="5" className="table-empty">Loading doctors...</td>
-              </tr>
+              <tr><td colSpan="5" className="table-empty">Loading doctors...</td></tr>
             ) : doctors.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="table-empty">No doctors found.</td>
-              </tr>
+              <tr><td colSpan="5" className="table-empty">No doctors found.</td></tr>
             ) : (
               doctors.map((d) => (
                 <tr key={d._id}>
                   <td className="table-name">Dr. {d.name}</td>
                   <td>{d.email}</td>
                   <td>
-                    <span
-                      className="table-badge"
-                      style={{ background: d.isActive ? "#2ecc71" : "#e74c3c" }}
-                    >
+                    <span className="table-badge" style={{ background: d.isActive ? "#2ecc71" : "#e74c3c" }}>
                       {d.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
@@ -120,23 +197,11 @@ const ManageDoctors = () => {
 
       {pagination.pages > 1 && (
         <div className="table-pagination">
-          <button
-            className="btn btn--secondary btn--sm"
-            disabled={pagination.page <= 1}
-            onClick={() => fetchDoctors(pagination.page - 1)}
-          >
-            Previous
-          </button>
-          <span className="table-pagination__info">
-            Page {pagination.page} of {pagination.pages}
-          </span>
-          <button
-            className="btn btn--secondary btn--sm"
-            disabled={pagination.page >= pagination.pages}
-            onClick={() => fetchDoctors(pagination.page + 1)}
-          >
-            Next
-          </button>
+          <button className="btn btn--secondary btn--sm" disabled={pagination.page <= 1}
+            onClick={() => fetchDoctors(pagination.page - 1)}>Previous</button>
+          <span className="table-pagination__info">Page {pagination.page} of {pagination.pages}</span>
+          <button className="btn btn--secondary btn--sm" disabled={pagination.page >= pagination.pages}
+            onClick={() => fetchDoctors(pagination.page + 1)}>Next</button>
         </div>
       )}
     </div>

@@ -10,6 +10,6 @@ export const updateAppointmentStatusApi = (id, status) =>
 
 export const deleteAppointmentApi = (id) => API.delete(`/appointments/${id}`);
 
-export const getDoctorsApi = () => API.get("/appointments/doctors");
+export const getDoctorsApi = () => API.get("/doctors");
 
 export const getPatientsApi = (params) => API.get("/patients", { params });

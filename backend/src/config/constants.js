@@ -14,7 +14,6 @@ const APPOINTMENT_STATUS = {
   PENDING: "pending",
   CONFIRMED: "confirmed",
   COMPLETED: "completed",
-  CANCELLED: "cancelled",
 };
 
 const TOKEN_EXPIRY = process.env.JWT_EXPIRE || "7d";

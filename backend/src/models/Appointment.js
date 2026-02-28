@@ -28,6 +28,11 @@ const appointmentSchema = new mongoose.Schema(
       enum: Object.values(APPOINTMENT_STATUS),
       default: APPOINTMENT_STATUS.PENDING,
     },
+    bookedBy: {
+      type: String,
+      enum: ["admin", "receptionist", "patient"],
+      required: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

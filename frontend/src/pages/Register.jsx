@@ -5,18 +5,11 @@ import { registerApi } from "../api/authApi";
 import { getDashboardPath } from "../utils/roleRedirect";
 import toast from "react-hot-toast";
 
-const ROLES = [
-  { value: "patient", label: "Patient" },
-  { value: "doctor", label: "Doctor" },
-  { value: "receptionist", label: "Receptionist" },
-];
-
 const Register = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: "patient",
   });
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -43,7 +36,10 @@ const Register = () => {
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
-        <h2>Register</h2>
+        <h2 style={{ margin: 0 }}>Patient Registration</h2>
+        <p style={{ margin: 0, fontSize: "0.85rem", color: "#666" }}>
+          Create your patient account to book appointments
+        </p>
         <input
           name="name"
           type="text"
@@ -72,24 +68,19 @@ const Register = () => {
           minLength={6}
           style={styles.input}
         />
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          style={styles.input}
-        >
-          {ROLES.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-        <button type="submit" disabled={loading} style={styles.btn}>
-          {loading ? "Registering..." : "Register"}
+        <button type="submit" disabled={loading} style={{
+          ...styles.btn,
+          opacity: loading ? 0.7 : 1,
+        }}>
+          {loading ? "Registering..." : "Create Account"}
         </button>
-        <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+        <p style={{ marginTop: "1rem", fontSize: "0.9rem", textAlign: "center" }}>
           Already have an account? <Link to="/login">Login</Link>
         </p>
+        <div style={styles.infoBox}>
+          <strong>Doctor or Receptionist?</strong><br />
+          Your account is created by the clinic admin. Please contact administration.
+        </div>
       </form>
     </div>
   );
@@ -101,7 +92,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    width: 360,
+    width: 380,
     padding: "2rem",
     background: "#fff",
     borderRadius: "8px",
@@ -121,6 +112,15 @@ const styles = {
     borderRadius: "4px",
     fontSize: "1rem",
     cursor: "pointer",
+  },
+  infoBox: {
+    padding: "0.75rem 1rem",
+    background: "#f0f3ff",
+    border: "1px solid #d0d8f0",
+    borderRadius: "6px",
+    fontSize: "0.8rem",
+    color: "#444",
+    lineHeight: 1.5,
   },
 };
 

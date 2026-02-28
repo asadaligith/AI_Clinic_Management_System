@@ -24,6 +24,7 @@ const PatientDashboard = () => {
     { label: "Upcoming Visits",      value: stats?.upcomingVisits ?? "...",      bg: "#9b59b6", emoji: "\uD83D\uDCC5" },
     { label: "Total Appointments",   value: stats?.totalAppointments ?? "...",   bg: "#3498db", emoji: "\uD83D\uDCCB" },
     { label: "Completed Visits",     value: stats?.completedVisits ?? "...",     bg: "#2ecc71", emoji: "\u2705" },
+    { label: "Prescriptions",        value: stats?.totalPrescriptions ?? "...", bg: "#e67e22", emoji: "\uD83D\uDCDD" },
   ];
 
   return (
@@ -53,12 +54,6 @@ const PatientDashboard = () => {
         </h2>
       </div>
       <div className="action-grid">
-        <Link to="/patient/book-appointment" className="action-card">
-          <div className="action-card__title">Book Appointment</div>
-          <div className="action-card__desc">
-            Schedule a visit with an available doctor
-          </div>
-        </Link>
         <Link to="/patient/profile" className="action-card">
           <div className="action-card__title">My Profile</div>
           <div className="action-card__desc">
@@ -69,6 +64,12 @@ const PatientDashboard = () => {
           <div className="action-card__title">My Appointments</div>
           <div className="action-card__desc">
             View scheduled and past appointments
+          </div>
+        </Link>
+        <Link to="/patient/prescriptions" className="action-card">
+          <div className="action-card__title">My Prescriptions</div>
+          <div className="action-card__desc">
+            View prescriptions from your doctor visits
           </div>
         </Link>
       </div>

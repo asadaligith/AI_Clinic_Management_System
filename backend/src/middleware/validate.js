@@ -1,6 +1,5 @@
 const { body, validationResult } = require("express-validator");
 const ApiError = require("../utils/ApiError");
-const { ROLES } = require("../config/constants");
 
 /**
  * Runs validation result check after express-validator rules.
@@ -33,10 +32,29 @@ const registerRules = [
     .withMessage("Password is required")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
-  body("role")
-    .optional()
-    .isIn(Object.values(ROLES))
-    .withMessage(`Role must be one of: ${Object.values(ROLES).join(", ")}`),
+  handleValidation,
+];
+
+// Admin creating doctor/receptionist — no role field needed
+const adminCreateUserRules = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ max: 100 })
+    .withMessage("Name cannot exceed 100 characters"),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please enter a valid email")
+    .normalizeEmail(),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
   handleValidation,
 ];
 
@@ -76,13 +94,15 @@ const createPatientRules = [
     .matches(/^\+?[\d\s-]{7,15}$/)
     .withMessage("Please enter a valid contact number (7-15 digits)"),
   body("email")
-    .optional({ values: "falsy" })
     .trim()
+    .notEmpty()
+    .withMessage("Patient email is required")
     .isEmail()
     .withMessage("Please enter a valid email")
     .normalizeEmail(),
   body("password")
-    .optional({ values: "falsy" })
+    .notEmpty()
+    .withMessage("Password is required for patient login")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
   handleValidation,
@@ -139,16 +159,45 @@ const updateStatusRules = [
   body("status")
     .notEmpty()
     .withMessage("Status is required")
-    .isIn(["pending", "confirmed", "completed", "cancelled"])
-    .withMessage("Status must be pending, confirmed, completed, or cancelled"),
+    .isIn(["pending", "confirmed", "completed"])
+    .withMessage("Status must be pending, confirmed, or completed"),
+  handleValidation,
+];
+
+const createPrescriptionRules = [
+  body("appointmentId")
+    .notEmpty()
+    .withMessage("Appointment is required")
+    .isMongoId()
+    .withMessage("Invalid appointment ID"),
+  body("medicines")
+    .isArray({ min: 1 })
+    .withMessage("At least one medicine is required"),
+  body("medicines.*.name")
+    .trim()
+    .notEmpty()
+    .withMessage("Medicine name is required"),
+  body("medicines.*.dosage")
+    .optional()
+    .trim(),
+  body("medicines.*.duration")
+    .optional()
+    .trim(),
+  body("instructions")
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage("Instructions cannot exceed 1000 characters"),
   handleValidation,
 ];
 
 module.exports = {
   registerRules,
+  adminCreateUserRules,
   loginRules,
   createPatientRules,
   updatePatientRules,
   createAppointmentRules,
   updateStatusRules,
+  createPrescriptionRules,
 };

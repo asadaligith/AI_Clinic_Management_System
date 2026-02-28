@@ -10,20 +10,20 @@ const patientSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      required: [true, "Age is required"],
       min: [0, "Age cannot be negative"],
       max: [150, "Age seems invalid"],
+      default: null,
     },
     gender: {
       type: String,
-      required: [true, "Gender is required"],
       enum: ["male", "female", "other"],
+      default: null,
     },
     contact: {
       type: String,
-      required: [true, "Contact number is required"],
       trim: true,
       match: [/^\+?[\d\s-]{7,15}$/, "Please enter a valid contact number"],
+      default: "",
     },
     email: {
       type: String,
@@ -38,7 +38,7 @@ const patientSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
     },
   },
   { timestamps: true }

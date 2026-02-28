@@ -25,10 +25,14 @@ import SystemStats from "../pages/admin/SystemStats";
 import RegisterPatient from "../pages/receptionist/RegisterPatient";
 import BookAppointment from "../pages/receptionist/BookAppointment";
 
+// Doctor sub-pages
+import CreatePrescription from "../pages/doctor/CreatePrescription";
+import PrescriptionList from "../pages/doctor/PrescriptionList";
+
 // Patient sub-pages
 import MyProfile from "../pages/patient/MyProfile";
 import MyAppointments from "../pages/patient/MyAppointments";
-import PatientBookAppointment from "../pages/patient/BookAppointment";
+import MyPrescriptions from "../pages/patient/MyPrescriptions";
 
 // Shared pages
 import PatientList from "../pages/shared/PatientList";
@@ -86,6 +90,8 @@ const AppRoutes = () => {
         <Route path="/doctor/appointments" element={<AppointmentList />} />
         <Route path="/doctor/patients" element={<PatientList />} />
         <Route path="/doctor/patients/:id" element={<PatientProfile />} />
+        <Route path="/doctor/prescriptions" element={<PrescriptionList />} />
+        <Route path="/doctor/create-prescription/:appointmentId" element={<CreatePrescription />} />
       </Route>
 
       {/* ---- Receptionist dashboard ---- */}
@@ -115,7 +121,7 @@ const AppRoutes = () => {
         <Route path="/patient/dashboard" element={<PatientDashboard />} />
         <Route path="/patient/profile" element={<MyProfile />} />
         <Route path="/patient/appointments" element={<MyAppointments />} />
-        <Route path="/patient/book-appointment" element={<PatientBookAppointment />} />
+        <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
       </Route>
     </Routes>
   );

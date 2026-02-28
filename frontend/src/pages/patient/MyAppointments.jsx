@@ -6,7 +6,6 @@ const STATUS_COLORS = {
   pending: "#f39c12",
   confirmed: "#3498db",
   completed: "#2ecc71",
-  cancelled: "#e74c3c",
 };
 
 const MyAppointments = () => {

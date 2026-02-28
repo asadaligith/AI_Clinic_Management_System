@@ -24,6 +24,7 @@ const DoctorDashboard = () => {
     { label: "Today's Appointments", value: stats?.todaysAppointments ?? "...", bg: "#3498db", emoji: "\uD83D\uDCC5" },
     { label: "Total Patients",       value: stats?.totalPatients ?? "...",       bg: "#2ecc71", emoji: "\uD83D\uDC65" },
     { label: "Pending Reviews",      value: stats?.pendingAppointments ?? "...", bg: "#e67e22", emoji: "\uD83D\uDCCB" },
+    { label: "Prescriptions",        value: stats?.totalPrescriptions ?? "...", bg: "#9b59b6", emoji: "\uD83D\uDCDD" },
   ];
 
   return (
@@ -63,6 +64,12 @@ const DoctorDashboard = () => {
           <div className="action-card__title">View Patients</div>
           <div className="action-card__desc">
             Access patient records and medical history
+          </div>
+        </Link>
+        <Link to="/doctor/prescriptions" className="action-card">
+          <div className="action-card__title">Prescriptions</div>
+          <div className="action-card__desc">
+            View all prescriptions you have created
           </div>
         </Link>
       </div>

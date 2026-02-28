@@ -4,14 +4,12 @@ const User = require("../models/User");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
-const { APPOINTMENT_STATUS } = require("../config/constants");
 
-// Valid status transitions
+// Valid status transitions: pending → confirmed → completed
 const VALID_TRANSITIONS = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["completed", "cancelled"],
+  pending: ["confirmed"],
+  confirmed: ["completed"],
   completed: [],
-  cancelled: [],
 };
 
 // @desc    Create appointment
@@ -22,9 +20,15 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   // If patient role, auto-set patientId from their linked Patient record
   if (req.user.role === "patient") {
-    const myPatient = await Patient.findOne({ userId: req.user._id });
+    let myPatient = await Patient.findOne({ userId: req.user._id });
+    // Auto-create Patient record if missing (for older accounts registered before fix)
     if (!myPatient) {
-      throw ApiError.badRequest("No patient profile linked to your account. Please contact reception.");
+      myPatient = await Patient.create({
+        name: req.user.name,
+        email: req.user.email,
+        userId: req.user._id,
+        createdBy: req.user._id,
+      });
     }
     patientId = myPatient._id;
   }
@@ -46,6 +50,7 @@ const createAppointment = asyncHandler(async (req, res) => {
     doctorId,
     date,
     reason,
+    bookedBy: req.user.role,
     createdBy: req.user._id,
   });
 
@@ -68,20 +73,19 @@ const getAppointments = asyncHandler(async (req, res) => {
   if (req.user.role === "doctor") {
     filter.doctorId = req.user._id;
   } else if (req.user.role === "patient") {
-    const myPatient = await Patient.findOne({ userId: req.user._id });
+    let myPatient = await Patient.findOne({ userId: req.user._id });
     if (!myPatient) {
-      return ApiResponse.success(res, {
-        appointments: [],
-        pagination: { total: 0, page: 1, limit: Number(limit), pages: 0 },
+      myPatient = await Patient.create({
+        name: req.user.name,
+        email: req.user.email,
+        userId: req.user._id,
+        createdBy: req.user._id,
       });
     }
     filter.patientId = myPatient._id;
   }
 
-  // Filters
-  if (status) {
-    filter.status = status;
-  }
+  if (status) filter.status = status;
   if (date) {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
@@ -113,6 +117,60 @@ const getAppointments = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get doctor's own appointments
+// @route   GET /api/v1/appointments/doctor/me
+// @access  doctor
+const getDoctorAppointments = asyncHandler(async (req, res) => {
+  const { status, date, page = 1, limit = 10 } = req.query;
+  const filter = { doctorId: req.user._id };
+
+  if (status) filter.status = status;
+  if (date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    filter.date = { $gte: start, $lte: end };
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [appointments, total] = await Promise.all([
+    Appointment.find(filter)
+      .populate("patientId", "name age gender contact")
+      .populate("doctorId", "name email")
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(Number(limit)),
+    Appointment.countDocuments(filter),
+  ]);
+
+  ApiResponse.success(res, {
+    appointments,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      pages: Math.ceil(total / Number(limit)),
+    },
+  });
+});
+
+// @desc    Get doctor's assigned patients (distinct from appointments)
+// @route   GET /api/v1/appointments/doctor/patients
+// @access  doctor
+const getDoctorPatients = asyncHandler(async (req, res) => {
+  const patientIds = await Appointment.distinct("patientId", {
+    doctorId: req.user._id,
+  });
+
+  const patients = await Patient.find({ _id: { $in: patientIds } })
+    .populate("createdBy", "name role")
+    .sort({ name: 1 });
+
+  ApiResponse.success(res, { patients });
+});
+
 // @desc    Update appointment status
 // @route   PUT /api/v1/appointments/:id/status
 // @access  doctor (own appointments), admin
@@ -132,7 +190,7 @@ const updateStatus = asyncHandler(async (req, res) => {
     throw ApiError.forbidden("You can only update your own appointments");
   }
 
-  // Enforce valid status transitions
+  // Enforce valid status transitions: pending → confirmed → completed
   const currentStatus = appointment.status;
   const validNext = VALID_TRANSITIONS[currentStatus];
   if (!validNext || !validNext.includes(status)) {
@@ -165,20 +223,11 @@ const deleteAppointment = asyncHandler(async (req, res) => {
   ApiResponse.success(res, null, "Appointment deleted successfully");
 });
 
-// @desc    Get doctors list (for booking dropdown)
-// @route   GET /api/v1/appointments/doctors
-// @access  receptionist, admin, patient
-const getDoctors = asyncHandler(async (_req, res) => {
-  const doctors = await User.find({ role: "doctor", isActive: true }).select(
-    "name email"
-  );
-  ApiResponse.success(res, { doctors });
-});
-
 module.exports = {
   createAppointment,
   getAppointments,
+  getDoctorAppointments,
+  getDoctorPatients,
   updateStatus,
   deleteAppointment,
-  getDoctors,
 };

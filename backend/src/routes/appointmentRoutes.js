@@ -2,9 +2,10 @@ const express = require("express");
 const {
   createAppointment,
   getAppointments,
+  getDoctorAppointments,
+  getDoctorPatients,
   updateStatus,
   deleteAppointment,
-  getDoctors,
 } = require("../controllers/appointmentController");
 const { protect, authorize } = require("../middleware/auth");
 const {
@@ -16,12 +17,13 @@ const router = express.Router();
 
 router.use(protect);
 
-// Doctors list for booking dropdown (patient can also access)
-router.get("/doctors", authorize("receptionist", "admin", "patient"), getDoctors);
+// Doctor-specific routes (must be above generic routes)
+router.get("/doctor/me", authorize("doctor"), getDoctorAppointments);
+router.get("/doctor/patients", authorize("doctor"), getDoctorPatients);
 
 router
   .route("/")
-  .post(authorize("receptionist", "admin", "patient"), createAppointmentRules, createAppointment)
+  .post(authorize("receptionist", "admin"), createAppointmentRules, createAppointment)
   .get(authorize("admin", "doctor", "receptionist", "patient"), getAppointments);
 
 router

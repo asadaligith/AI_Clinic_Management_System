@@ -5,6 +5,7 @@ const {
   getPatient,
   updatePatient,
   getMyProfile,
+  updateMyProfile,
 } = require("../controllers/patientController");
 const { protect, authorize } = require("../middleware/auth");
 const {
@@ -18,7 +19,10 @@ const router = express.Router();
 router.use(protect);
 
 // Patient's own profile (must be above /:id to avoid conflict)
-router.get("/my-profile", authorize("patient"), getMyProfile);
+router
+  .route("/my-profile")
+  .get(authorize("patient"), getMyProfile)
+  .put(authorize("patient"), updatePatientRules, updateMyProfile);
 
 router
   .route("/")
