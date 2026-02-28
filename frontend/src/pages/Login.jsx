@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { loginApi } from "../api/authApi";
+import { getDashboardPath } from "../utils/roleRedirect";
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -20,7 +21,7 @@ const Login = () => {
       const { data } = await loginApi(form);
       login(data.data.user, data.data.token);
       toast.success("Login successful");
-      navigate("/dashboard");
+      navigate(getDashboardPath(data.data.user.role));
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {

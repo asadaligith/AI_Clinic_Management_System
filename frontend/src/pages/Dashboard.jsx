@@ -1,16 +1,21 @@
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const Dashboard = () => {
-  const { user } = useAuth();
+const ROLE_DASHBOARDS = {
+  admin: "/admin/dashboard",
+  doctor: "/doctor/dashboard",
+  receptionist: "/receptionist/dashboard",
+  patient: "/patient/dashboard",
+};
 
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Dashboard</h1>
-      <p style={{ marginTop: "0.5rem", color: "#555" }}>
-        Welcome back, <strong>{user?.name}</strong> ({user?.role})
-      </p>
-    </div>
-  );
+const Dashboard = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+
+  const target = ROLE_DASHBOARDS[user.role] || "/";
+  return <Navigate to={target} replace />;
 };
 
 export default Dashboard;

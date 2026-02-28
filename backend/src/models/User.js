@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { ROLES, TOKEN_EXPIRY } = require("../config/constants");
+const { ROLES, SUBSCRIPTION_PLANS, TOKEN_EXPIRY } = require("../config/constants");
 
 const userSchema = new mongoose.Schema(
   {
@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(ROLES),
       default: ROLES.PATIENT,
+    },
+    subscriptionPlan: {
+      type: String,
+      enum: Object.values(SUBSCRIPTION_PLANS),
+      default: SUBSCRIPTION_PLANS.FREE,
     },
     isActive: {
       type: Boolean,

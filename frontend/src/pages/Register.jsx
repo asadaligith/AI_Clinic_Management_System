@@ -2,10 +2,22 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { registerApi } from "../api/authApi";
+import { getDashboardPath } from "../utils/roleRedirect";
 import toast from "react-hot-toast";
 
+const ROLES = [
+  { value: "patient", label: "Patient" },
+  { value: "doctor", label: "Doctor" },
+  { value: "receptionist", label: "Receptionist" },
+];
+
 const Register = () => {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "patient",
+  });
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +32,7 @@ const Register = () => {
       const { data } = await registerApi(form);
       login(data.data.user, data.data.token);
       toast.success("Registration successful");
-      navigate("/dashboard");
+      navigate(getDashboardPath(data.data.user.role));
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -60,6 +72,18 @@ const Register = () => {
           minLength={6}
           style={styles.input}
         />
+        <select
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+          style={styles.input}
+        >
+          {ROLES.map((r) => (
+            <option key={r.value} value={r.value}>
+              {r.label}
+            </option>
+          ))}
+        </select>
         <button type="submit" disabled={loading} style={styles.btn}>
           {loading ? "Registering..." : "Register"}
         </button>
