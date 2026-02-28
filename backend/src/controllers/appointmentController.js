@@ -6,11 +6,28 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 const { APPOINTMENT_STATUS } = require("../config/constants");
 
+// Valid status transitions
+const VALID_TRANSITIONS = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["completed", "cancelled"],
+  completed: [],
+  cancelled: [],
+};
+
 // @desc    Create appointment
 // @route   POST /api/v1/appointments
-// @access  receptionist, admin
+// @access  receptionist, admin, patient
 const createAppointment = asyncHandler(async (req, res) => {
-  const { patientId, doctorId, date, reason } = req.body;
+  let { patientId, doctorId, date, reason } = req.body;
+
+  // If patient role, auto-set patientId from their linked Patient record
+  if (req.user.role === "patient") {
+    const myPatient = await Patient.findOne({ userId: req.user._id });
+    if (!myPatient) {
+      throw ApiError.badRequest("No patient profile linked to your account. Please contact reception.");
+    }
+    patientId = myPatient._id;
+  }
 
   // Verify patient exists
   const patient = await Patient.findById(patientId);
@@ -50,6 +67,15 @@ const getAppointments = asyncHandler(async (req, res) => {
   // Role-based scoping
   if (req.user.role === "doctor") {
     filter.doctorId = req.user._id;
+  } else if (req.user.role === "patient") {
+    const myPatient = await Patient.findOne({ userId: req.user._id });
+    if (!myPatient) {
+      return ApiResponse.success(res, {
+        appointments: [],
+        pagination: { total: 0, page: 1, limit: Number(limit), pages: 0 },
+      });
+    }
+    filter.patientId = myPatient._id;
   }
 
   // Filters
@@ -106,6 +132,15 @@ const updateStatus = asyncHandler(async (req, res) => {
     throw ApiError.forbidden("You can only update your own appointments");
   }
 
+  // Enforce valid status transitions
+  const currentStatus = appointment.status;
+  const validNext = VALID_TRANSITIONS[currentStatus];
+  if (!validNext || !validNext.includes(status)) {
+    throw ApiError.badRequest(
+      `Cannot change status from '${currentStatus}' to '${status}'`
+    );
+  }
+
   appointment.status = status;
   await appointment.save();
 
@@ -132,7 +167,7 @@ const deleteAppointment = asyncHandler(async (req, res) => {
 
 // @desc    Get doctors list (for booking dropdown)
 // @route   GET /api/v1/appointments/doctors
-// @access  receptionist, admin
+// @access  receptionist, admin, patient
 const getDoctors = asyncHandler(async (_req, res) => {
   const doctors = await User.find({ role: "doctor", isActive: true }).select(
     "name email"

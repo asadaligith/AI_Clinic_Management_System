@@ -1,23 +1,49 @@
 const Patient = require("../models/Patient");
+const User = require("../models/User");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
-// @desc    Create a patient
+// @desc    Create a patient (+ optional User account)
 // @route   POST /api/v1/patients
 // @access  receptionist, admin
 const createPatient = asyncHandler(async (req, res) => {
-  const { name, age, gender, contact } = req.body;
+  const { name, age, gender, contact, email, password } = req.body;
+
+  let userId = null;
+
+  // If email + password provided, create a User account for the patient
+  if (email && password) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw ApiError.badRequest("Email already registered");
+    }
+
+    const userAccount = await User.create({
+      name,
+      email,
+      password,
+      role: "patient",
+    });
+    userId = userAccount._id;
+  }
 
   const patient = await Patient.create({
     name,
     age,
     gender,
     contact,
+    email: email || undefined,
+    userId,
     createdBy: req.user._id,
   });
 
-  ApiResponse.created(res, { patient }, "Patient registered successfully");
+  const populated = await Patient.findById(patient._id).populate(
+    "createdBy",
+    "name role"
+  );
+
+  ApiResponse.created(res, { patient: populated }, "Patient registered successfully");
 });
 
 // @desc    Get all patients (search + pagination)
@@ -93,4 +119,20 @@ const updatePatient = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { patient }, "Patient updated successfully");
 });
 
-module.exports = { createPatient, getPatients, getPatient, updatePatient };
+// @desc    Get logged-in patient's own profile
+// @route   GET /api/v1/patients/my-profile
+// @access  patient
+const getMyProfile = asyncHandler(async (req, res) => {
+  const patient = await Patient.findOne({ userId: req.user._id }).populate(
+    "createdBy",
+    "name role"
+  );
+
+  if (!patient) {
+    throw ApiError.notFound("No patient profile linked to your account");
+  }
+
+  ApiResponse.success(res, { patient });
+});
+
+module.exports = { createPatient, getPatients, getPatient, updatePatient, getMyProfile };

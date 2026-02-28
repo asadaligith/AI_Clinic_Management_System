@@ -20,9 +20,10 @@ const sidebarMenus = {
     { label: "Appointments",     path: "/receptionist/appointments",     icon: "calendar"   },
   ],
   patient: [
-    { label: "Dashboard",       path: "/patient/dashboard",     icon: "grid"     },
-    { label: "My Profile",      path: "/patient/profile",       icon: "user"     },
-    { label: "My Appointments", path: "/patient/appointments",  icon: "calendar" },
+    { label: "Dashboard",        path: "/patient/dashboard",         icon: "grid"     },
+    { label: "Book Appointment", path: "/patient/book-appointment",  icon: "calendar" },
+    { label: "My Appointments",  path: "/patient/appointments",      icon: "calendar" },
+    { label: "My Profile",       path: "/patient/profile",           icon: "user"     },
   ],
 };
 

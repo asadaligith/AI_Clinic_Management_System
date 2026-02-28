@@ -25,6 +25,16 @@ const patientSchema = new mongoose.Schema(
       trim: true,
       match: [/^\+?[\d\s-]{7,15}$/, "Please enter a valid contact number"],
     },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -36,5 +46,6 @@ const patientSchema = new mongoose.Schema(
 
 patientSchema.index({ name: "text" });
 patientSchema.index({ createdBy: 1 });
+patientSchema.index({ userId: 1 });
 
 module.exports = mongoose.model("Patient", patientSchema);

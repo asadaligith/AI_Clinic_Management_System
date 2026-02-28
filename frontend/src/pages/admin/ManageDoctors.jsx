@@ -1,11 +1,146 @@
-import PlaceholderPage from "../../components/PlaceholderPage";
+import { useState, useEffect, useCallback } from "react";
+import { getUsersApi, updateUserApi } from "../../api/adminApi";
+import toast from "react-hot-toast";
 
-const ManageDoctors = () => (
-  <PlaceholderPage
-    title="Manage Doctors"
-    description="Add, edit, view, and deactivate doctor accounts. Assign specializations and manage schedules."
-    icon="user-md"
-  />
-);
+const ManageDoctors = () => {
+  const [doctors, setDoctors] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchDoctors = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        const params = { role: "doctor", page, limit: 10 };
+        if (search) params.search = search;
+        const { data } = await getUsersApi(params);
+        setDoctors(data.data.users);
+        setPagination(data.data.pagination);
+      } catch {
+        toast.error("Failed to load doctors");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [search]
+  );
+
+  useEffect(() => {
+    fetchDoctors(1);
+  }, [fetchDoctors]);
+
+  const toggleActive = async (id, currentStatus) => {
+    try {
+      await updateUserApi(id, { isActive: !currentStatus });
+      toast.success(`Doctor ${currentStatus ? "deactivated" : "activated"}`);
+      fetchDoctors(pagination.page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
+    }
+  };
+
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  return (
+    <div>
+      <div className="dash-page__header">
+        <h1 className="dash-page__title">Manage Doctors</h1>
+        <p className="dash-page__subtitle">
+          {pagination.total} doctor{pagination.total !== 1 ? "s" : ""} registered
+        </p>
+      </div>
+
+      <div className="table-toolbar">
+        <div className="table-search">
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="form-input"
+            style={{ maxWidth: 300 }}
+          />
+        </div>
+      </div>
+
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="table-empty">Loading doctors...</td>
+              </tr>
+            ) : doctors.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="table-empty">No doctors found.</td>
+              </tr>
+            ) : (
+              doctors.map((d) => (
+                <tr key={d._id}>
+                  <td className="table-name">Dr. {d.name}</td>
+                  <td>{d.email}</td>
+                  <td>
+                    <span
+                      className="table-badge"
+                      style={{ background: d.isActive ? "#2ecc71" : "#e74c3c" }}
+                    >
+                      {d.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td>{formatDate(d.createdAt)}</td>
+                  <td>
+                    <button
+                      className={`btn btn--sm ${d.isActive ? "btn--danger" : "btn--primary"}`}
+                      onClick={() => toggleActive(d._id, d.isActive)}
+                    >
+                      {d.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {pagination.pages > 1 && (
+        <div className="table-pagination">
+          <button
+            className="btn btn--secondary btn--sm"
+            disabled={pagination.page <= 1}
+            onClick={() => fetchDoctors(pagination.page - 1)}
+          >
+            Previous
+          </button>
+          <span className="table-pagination__info">
+            Page {pagination.page} of {pagination.pages}
+          </span>
+          <button
+            className="btn btn--secondary btn--sm"
+            disabled={pagination.page >= pagination.pages}
+            onClick={() => fetchDoctors(pagination.page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default ManageDoctors;

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPatientApi } from "../../api/patientApi";
 import toast from "react-hot-toast";
 
-const INITIAL = { name: "", age: "", gender: "", contact: "" };
+const INITIAL = { name: "", age: "", gender: "", contact: "", email: "", password: "" };
 
 const RegisterPatient = () => {
   const [form, setForm] = useState(INITIAL);
@@ -20,6 +20,12 @@ const RegisterPatient = () => {
     if (!form.contact.trim()) errs.contact = "Contact is required";
     else if (!/^\+?[\d\s-]{7,15}$/.test(form.contact))
       errs.contact = "Invalid contact number";
+    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email))
+      errs.email = "Invalid email address";
+    if (form.email && !form.password)
+      errs.password = "Password required when email is provided";
+    if (form.password && form.password.length < 6)
+      errs.password = "Password must be at least 6 characters";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -128,6 +134,38 @@ const RegisterPatient = () => {
                 <span className="form-error">{errors.contact}</span>
               )}
             </div>
+
+            {/* Email (optional - creates patient login) */}
+            <div className="form-group">
+              <label className="form-label">Email (optional - creates login account)</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className={`form-input ${errors.email ? "form-input--error" : ""}`}
+                placeholder="patient@example.com"
+              />
+              {errors.email && <span className="form-error">{errors.email}</span>}
+            </div>
+
+            {/* Password (required if email is set) */}
+            {form.email && (
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  className={`form-input ${errors.password ? "form-input--error" : ""}`}
+                  placeholder="Min 6 characters"
+                />
+                {errors.password && (
+                  <span className="form-error">{errors.password}</span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-actions">

@@ -28,6 +28,7 @@ import BookAppointment from "../pages/receptionist/BookAppointment";
 // Patient sub-pages
 import MyProfile from "../pages/patient/MyProfile";
 import MyAppointments from "../pages/patient/MyAppointments";
+import PatientBookAppointment from "../pages/patient/BookAppointment";
 
 // Shared pages
 import PatientList from "../pages/shared/PatientList";
@@ -114,6 +115,7 @@ const AppRoutes = () => {
         <Route path="/patient/dashboard" element={<PatientDashboard />} />
         <Route path="/patient/profile" element={<MyProfile />} />
         <Route path="/patient/appointments" element={<MyAppointments />} />
+        <Route path="/patient/book-appointment" element={<PatientBookAppointment />} />
       </Route>
     </Routes>
   );

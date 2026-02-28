@@ -75,6 +75,16 @@ const createPatientRules = [
     .withMessage("Contact number is required")
     .matches(/^\+?[\d\s-]{7,15}$/)
     .withMessage("Please enter a valid contact number (7-15 digits)"),
+  body("email")
+    .optional({ values: "falsy" })
+    .trim()
+    .isEmail()
+    .withMessage("Please enter a valid email")
+    .normalizeEmail(),
+  body("password")
+    .optional({ values: "falsy" })
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
   handleValidation,
 ];
 
@@ -104,8 +114,7 @@ const updatePatientRules = [
 
 const createAppointmentRules = [
   body("patientId")
-    .notEmpty()
-    .withMessage("Patient is required")
+    .optional()
     .isMongoId()
     .withMessage("Invalid patient ID"),
   body("doctorId")

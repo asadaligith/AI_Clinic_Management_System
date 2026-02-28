@@ -1,8 +1,31 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getDashboardStatsApi } from "../../api/statsApi";
+import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await getDashboardStatsApi();
+        setStats(data.data.stats);
+      } catch {
+        toast.error("Failed to load dashboard stats");
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const statCards = [
+    { label: "Total Doctors",       value: stats?.totalDoctors ?? "...",       bg: "#2ecc71", emoji: "\uD83D\uDC68\u200D\u2695\uFE0F" },
+    { label: "Total Patients",      value: stats?.totalPatients ?? "...",      bg: "#9b59b6", emoji: "\uD83C\uDFE5" },
+    { label: "Appointments Today",  value: stats?.appointmentsToday ?? "...",  bg: "#3498db", emoji: "\uD83D\uDCC5" },
+    { label: "Total Appointments",  value: stats?.totalAppointments ?? "...",  bg: "#f39c12", emoji: "\uD83D\uDCCB" },
+  ];
 
   return (
     <div>
@@ -13,9 +36,8 @@ const AdminDashboard = () => {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="stat-grid">
-        {stats.map((s) => (
+        {statCards.map((s) => (
           <div className="stat-card" key={s.label}>
             <div className="stat-card__icon" style={{ background: s.bg }}>
               {s.emoji}
@@ -26,7 +48,6 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Quick actions */}
       <div className="dash-page__header">
         <h2 className="dash-page__title" style={{ fontSize: "1.15rem" }}>
           Quick Actions
@@ -55,12 +76,5 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
-const stats = [
-  { label: "Total Doctors",       value: "—", bg: "#2ecc71", emoji: "👨‍⚕️" },
-  { label: "Total Patients",      value: "—", bg: "#9b59b6", emoji: "🏥" },
-  { label: "Appointments Today",  value: "—", bg: "#3498db", emoji: "📅" },
-  { label: "Active Subscriptions",value: "—", bg: "#f39c12", emoji: "💳" },
-];
 
 export default AdminDashboard;

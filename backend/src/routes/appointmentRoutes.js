@@ -16,13 +16,13 @@ const router = express.Router();
 
 router.use(protect);
 
-// Doctors list for booking dropdown
-router.get("/doctors", authorize("receptionist", "admin"), getDoctors);
+// Doctors list for booking dropdown (patient can also access)
+router.get("/doctors", authorize("receptionist", "admin", "patient"), getDoctors);
 
 router
   .route("/")
-  .post(authorize("receptionist", "admin"), createAppointmentRules, createAppointment)
-  .get(authorize("admin", "doctor", "receptionist"), getAppointments);
+  .post(authorize("receptionist", "admin", "patient"), createAppointmentRules, createAppointment)
+  .get(authorize("admin", "doctor", "receptionist", "patient"), getAppointments);
 
 router
   .route("/:id/status")
