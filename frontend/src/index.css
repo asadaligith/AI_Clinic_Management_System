@@ -17,3 +17,71 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+/* ============================
+   Public Navbar
+   ============================ */
+.public-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
+}
+
+.public-nav__brand {
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.public-nav__links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.public-nav__link {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.public-nav__link:hover {
+  color: #fff;
+}
+
+.public-nav__btn {
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.public-nav__btn--primary {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  color: #fff;
+}
+
+.public-nav__btn--primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Loading spinner */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #64748b;
+  font-size: 1rem;
+}

@@ -1,60 +1,32 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const { user } = useAuth();
 
   return (
-    <nav style={styles.nav}>
-      <Link to="/" style={styles.brand}>
+    <nav className="public-nav">
+      <Link to="/" className="public-nav__brand">
         AI Clinic
       </Link>
-      <div style={styles.links}>
+      <div className="public-nav__links">
         {user ? (
-          <>
-            <Link to="/dashboard" style={styles.link}>Dashboard</Link>
-            <button onClick={handleLogout} style={styles.btn}>
-              Logout
-            </button>
-          </>
+          <Link to="/dashboard" className="public-nav__btn public-nav__btn--primary">
+            Go to Dashboard
+          </Link>
         ) : (
           <>
-            <Link to="/login" style={styles.link}>Login</Link>
-            <Link to="/register" style={styles.link}>Register</Link>
+            <Link to="/login" className="public-nav__link">
+              Login
+            </Link>
+            <Link to="/register" className="public-nav__btn public-nav__btn--primary">
+              Register
+            </Link>
           </>
         )}
       </div>
     </nav>
   );
-};
-
-const styles = {
-  nav: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "1rem 2rem",
-    backgroundColor: "#16213e",
-    color: "#fff",
-  },
-  brand: { fontSize: "1.4rem", fontWeight: "bold", color: "#00d2ff" },
-  links: { display: "flex", gap: "1rem", alignItems: "center" },
-  link: { color: "#e0e0e0", fontSize: "0.95rem" },
-  btn: {
-    background: "#e94560",
-    color: "#fff",
-    border: "none",
-    padding: "0.4rem 1rem",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-  },
 };
 
 export default Navbar;
